@@ -1,5 +1,6 @@
 // src/lib/api.js
-const BASE = import.meta.env.VITE_BACKEND_URL ?? "http://localhost:8080";
+const BASE = rt.meta.env.VITE_BACKEND_URL ?? "https://agentpay-backend-production.up.railway.app";
+
 
 export async function fetchTools() {
   const r = await fetch(`${BASE}/tools`);
