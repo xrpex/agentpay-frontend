@@ -83,7 +83,7 @@ export default function AboutPage() {
       <div style={{ marginBottom: "2rem" }}>
         <h1 style={{ fontSize: "1.8rem", fontWeight: 800, marginBottom: "0.4rem" }}>About AgentPay</h1>
         <p style={{ color: "var(--muted)", fontSize: "0.9rem", lineHeight: 1.6 }}>
-          Transparency about who we are, how payments work, and how to get help.
+          Transparency about who we are, what we offer, how payments work, and how to get help.
         </p>
       </div>
 
@@ -95,9 +95,75 @@ export default function AboutPage() {
           builds a pay-per-call AI tool marketplace on the XRP Ledger using the x402 payment protocol.
         </p>
         <p style={S.p}>
+          We offer both <strong style={{ color: "var(--text)" }}>free open-source tools</strong> you can self-host
+          and <strong style={{ color: "var(--text)" }}>premium paid tools</strong> that operate on a pay-per-call
+          basis with no subscriptions or API keys required.
+        </p>
+        <p style={S.p}>
           It is <strong style={{ color: "var(--text)" }}>not affiliated with, endorsed by, or operated by
           Ripple Labs, the XRP Ledger Foundation, or any other organization.</strong>
         </p>
+      </div>
+
+      {/* ── What We Offer ── */}
+      <div style={S.section}>
+        <h2 style={S.h2}>🛠️ What We Offer</h2>
+        
+        <div style={{ marginBottom: "1rem" }}>
+          <div style={{ fontSize: "0.75rem", color: "var(--muted)", fontWeight: 700, letterSpacing: "0.08em", marginBottom: "0.75rem" }}>
+            FREE & OPEN SOURCE TOOLS
+          </div>
+          <p style={S.p}>
+            Community-maintained tools you can deploy to your own AI agent with one script.
+            No payment required — call hosted endpoints directly or self-host.
+          </p>
+        </div>
+
+        <div style={{ marginBottom: "1rem" }}>
+          <div style={{ fontSize: "0.75rem", color: "var(--muted)", fontWeight: 700, letterSpacing: "0.08em", marginBottom: "0.75rem" }}>
+            PREMIUM PAID TOOLS — PAY PER CALL
+          </div>
+          <p style={S.p}>
+            Verified provider tools with instant XRP settlement on the XRPL via x402 protocol.
+            No API keys needed — cryptographic payment proofs are your credentials.
+          </p>
+          
+          <div style={{ display: "grid", gap: "0.5rem", marginTop: "0.75rem" }}>
+            {[
+              { name: "Web Scraper", price: "0.01", desc: "Extract content from any URL", drops: "10,000" },
+              { name: "Price Oracle", price: "0.005", desc: "Real-time XRP/USD price feed", drops: "5,000" },
+              { name: "AI Summarizer", price: "0.02", desc: "Summarize long-form content", drops: "20,000" },
+              { name: "DeFi Data", price: "0.01", desc: "DeFi protocol analytics & data", drops: "10,000" },
+              { name: "Codex Search", price: "0.03", desc: "Code & documentation search", drops: "30,000" },
+            ].map((tool) => (
+              <div key={tool.name} style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                background: "var(--bg2)",
+                borderRadius: "8px",
+                padding: "0.75rem 1rem",
+                border: "1px solid var(--border)",
+              }}>
+                <div>
+                  <div style={{ fontWeight: 600, fontSize: "0.85rem", color: "var(--text)" }}>{tool.name}</div>
+                  <div style={{ fontSize: "0.75rem", color: "var(--muted)" }}>{tool.desc}</div>
+                </div>
+                <div style={{ textAlign: "right" }}>
+                  <div style={{ fontWeight: 700, fontSize: "0.85rem", color: "#f59e0b" }}>{tool.price} XRP</div>
+                  <div style={{ fontSize: "0.7rem", color: "var(--muted)" }}>{tool.drops} drops</div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div style={{ marginTop: "1rem", padding: "0.75rem", background: "rgba(34,197,94,0.05)", borderRadius: "8px", border: "1px solid rgba(34,197,94,0.2)" }}>
+          <p style={{ ...S.p, marginBottom: 0, fontSize: "0.82rem" }}>
+            <strong style={{ color: "#22c55e" }}>💡 Developer?</strong> You can list your own paid tools via the{" "}
+            <a href="/_ap" style={S.link}>Admin Panel</a> and earn XRP per call.
+          </p>
+        </div>
       </div>
 
       {/* ── t54 Relationship ── */}
@@ -226,3 +292,5 @@ export default function AboutPage() {
     </div>
   );
 }
+       
+
