@@ -1,7 +1,7 @@
 import React from "react";
 import { Outlet, NavLink } from "react-router-dom";
 
-const navStyle = {
+const nav = {
   background: "var(--bg2)",
   borderBottom: "1px solid var(--border)",
   padding: "0 2rem",
@@ -15,7 +15,7 @@ const navStyle = {
   overflowX: "auto",
 };
 
-const logoStyle = {
+const logo = {
   fontWeight: 800,
   fontSize: "1.2rem",
   background: "linear-gradient(135deg, #0ea5e9, #7c3aed)",
@@ -25,7 +25,7 @@ const logoStyle = {
   flexShrink: 0,
 };
 
-const linkStyle = ({ isActive }) => ({
+const link = ({ isActive }) => ({
   color: isActive ? "var(--accent)" : "var(--muted)",
   fontWeight: 500,
   fontSize: "0.9rem",
@@ -36,28 +36,25 @@ const linkStyle = ({ isActive }) => ({
   flexShrink: 0,
 });
 
-const badgeStyle = {
+const badge = {
   background: "linear-gradient(135deg, #0ea5e9, #7c3aed)",
   color: "#fff",
   fontSize: "0.65rem",
   fontWeight: 700,
   padding: "2px 6px",
   borderRadius: "99px",
-  marginLeft: "6px",
-  verticalAlign: "middle",
   flexShrink: 0,
 };
 
 export default function Layout() {
   return (
     <>
-      <nav style={navStyle}>
-        <span style={logoStyle}>⚡ AgentPay</span>
-        <NavLink to="/" style={linkStyle}>Marketplace</NavLink>
-        <NavLink to="/dashboard" style={linkStyle}>Dashboard</NavLink>
-        <NavLink to="/docs" style={linkStyle}>Docs</NavLink>
-        <NavLink to="/about" style={linkStyle}>About</NavLink>
-        <span style={badgeStyle}>x402 · XRPL</span>
+      <nav style={nav}>
+        <span style={logo}>⚡ AgentPay</span>
+        <NavLink to="/" style={link}>Marketplace</NavLink>
+        <NavLink to="/dashboard" style={link}>Dashboard</NavLink>
+        <NavLink to="/about" style={link}>About</NavLink>
+        <span style={badge}>x402 · XRPL</span>
       </nav>
       <main style={{ maxWidth: "1200px", margin: "0 auto", padding: "2rem" }}>
         <Outlet />
