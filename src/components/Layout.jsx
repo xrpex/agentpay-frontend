@@ -46,6 +46,18 @@ const badge = {
   flexShrink: 0,
 };
 
+const ctaButton = {
+  background: "linear-gradient(135deg, #0ea5e9, #7c3aed)",
+  color: "#fff",
+  fontSize: "0.78rem",
+  fontWeight: 600,
+  padding: "6px 14px",
+  borderRadius: "8px",
+  textDecoration: "none",
+  flexShrink: 0,
+  marginLeft: "auto",
+};
+
 export default function Layout() {
   return (
     <>
@@ -53,6 +65,7 @@ export default function Layout() {
         <span style={logo}>⚡ AgentPay</span>
         <NavLink to="/" style={link}>Marketplace</NavLink>
         <NavLink to="/about" style={link}>About</NavLink>
+        <NavLink to="/list-tool" style={link}>List Your Tool</NavLink> {/* ADD THIS LINK */}
         <span style={badge}>x402 · XRPL</span>
       </nav>
       <main style={{ maxWidth: "1200px", margin: "0 auto", padding: "2rem" }}>
