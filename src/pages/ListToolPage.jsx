@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 const S = {
   section: {
@@ -9,12 +10,18 @@ const S = {
     marginBottom: "1.25rem",
   },
   h2: {
-    fontSize: "1rem",
+    fontSize: "1.1rem",
     fontWeight: 700,
     marginBottom: "0.75rem",
     display: "flex",
     alignItems: "center",
     gap: "0.5rem",
+  },
+  h3: {
+    fontSize: "0.95rem",
+    fontWeight: 600,
+    marginBottom: "0.5rem",
+    color: "var(--text)",
   },
   p: {
     color: "var(--muted)",
@@ -26,18 +33,6 @@ const S = {
     color: "var(--accent)",
     textDecoration: "none",
     fontWeight: 500,
-  },
-  badge: {
-    display: "inline-block",
-    background: "rgba(6,182,212,0.1)",
-    border: "1px solid rgba(6,182,212,0.3)",
-    color: "#06b6d4",
-    fontSize: "0.7rem",
-    fontWeight: 700,
-    padding: "2px 8px",
-    borderRadius: "99px",
-    marginLeft: "0.5rem",
-    verticalAlign: "middle",
   },
   pill: (color) => ({
     display: "inline-flex",
@@ -54,239 +49,593 @@ const S = {
     marginRight: "0.5rem",
     marginBottom: "0.5rem",
   }),
+  tierCard: (selected) => ({
+    background: selected ? "rgba(124, 58, 237, 0.1)" : "var(--bg2)",
+    border: selected ? "2px solid #7c3aed" : "1px solid var(--border)",
+    borderRadius: "12px",
+    padding: "1.25rem",
+    cursor: "pointer",
+    transition: "all 0.2s",
+    flex: 1,
+    minWidth: "200px",
+  }),
 };
 
-function AccordionItem({ q, a }) {
-  const [open, setOpen] = useState(false);
-  return (
-    <div style={{
-      borderBottom: "1px solid var(--border)",
-      padding: "0.75rem 0",
-    }}>
-      <div
-        onClick={() => setOpen(!open)}
-        style={{ cursor: "pointer", display: "flex", justifyContent: "space-between", alignItems: "center" }}
+const CATEGORIES = ["AI", "Data", "Finance", "Dev", "Other"];
+const METHODS = ["GET", "POST", "PUT", "DELETE"];
+
+const EMPTY_TOOL = {
+  id: "",
+  name: "",
+  description: "",
+  category: "AI",
+  icon: "🔧",
+  method: "GET",
+  path: "",
+  price_drops: "10000",
+  endpoint_url: "",
+  deploy_script: "",
+  example_request: "",
+  example_response: "",
+  github: "",
+  docs_url: "",
+  provider: "",
+  provider_email: "",
+};
+
+export default function ListToolPage() {
+  const navigate = useNavigate();
+  const [form, setForm] = useState({ ...EMPTY_TOOL });
+  const [selectedTier, setSelectedTier] = useState("standard");
+  const [errors, setErrors] = useState({});
+  const [submitting, setSubmitting] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
+
+  const set = (k, v) => setForm((f) => ({ ...f, [k]: v }));
+
+  const tiers = {
+    basic: {
+      name: "Basic",
+      price: "5 XRP",
+      listingFee: 5,
+      transactionFee: "8%",
+      features: ["Standard listing", "Basic analytics", "Community support"],
+      color: "#64748b",
+    },
+    standard: {
+      name: "Standard",
+      price: "10 XRP",
+      listingFee: 10,
+      transactionFee: "5%",
+      features: ["Priority placement", "Advanced analytics", "Email support", "Verified badge"],
+      color: "#7c3aed",
+      recommended: true,
+    },
+    featured: {
+      name: "Featured",
+      price: "50 XRP",
+      listingFee: 50,
+      transactionFee: "3%",
+      features: ["Homepage featured", "Priority placement", "Advanced analytics", "Priority support", "Verified badge"],
+      color: "#f59e0b",
+    },
+  };
+
+  function validate() {
+    const e = {};
+    if (!form.id.trim()) e.id = "Required - unique tool identifier";
+    if (!form.name.trim()) e.name = "Required - display name";
+    if (!form.description.trim()) e.description = "Required - what does your tool do?";
+    if (!form.path.trim()) e.path = "Required - e.g. /tools/my-tool";
+    if (!form.endpoint_url.trim()) e.endpoint_url = "Required - your server URL";
+    if (!form.provider.trim()) e.provider = "Required - your name or org";
+    if (!form.provider_email.trim()) e.provider_email = "Required - for verification";
+    setErrors(e);
+    return Object.keys(e).length === 0;
+  }
+
+  async function handleSubmit() {
+    if (!validate()) return;
+    setSubmitting(true);
+
+    // Simulate API call - in production this would hit your backend
+    await new Promise((resolve) => setTimeout(resolve, 1500));
+
+    // Store submission (in production, save to Supabase with pending_payment status)
+    const submission = {
+      ...form,
+      tier: selectedTier,
+      listing_fee_xrp: tiers[selectedTier].listingFee,
+      transaction_fee_percent: parseInt(tiers[selectedTier].transactionFee),
+      status: "pending_payment",
+      submitted_at: new Date().toISOString(),
+    };
+
+    console.log("Tool submission:", submission);
+    setSubmitted(true);
+    setSubmitting(false);
+  }
+
+  const Field = ({ label, k, placeholder, textarea, required, type = "text" }) => (
+    <div style={{ marginBottom: "0.85rem" }}>
+      <label
+        style={{
+          fontSize: "0.72rem",
+          fontWeight: 700,
+          color: "var(--muted)",
+          display: "block",
+          marginBottom: "4px",
+          textTransform: "uppercase",
+          letterSpacing: ".06em",
+        }}
       >
-        <span style={{ fontSize: "0.88rem", fontWeight: 500 }}>{q}</span>
-        <span style={{ color: "var(--muted)", fontSize: "0.9rem" }}>{open ? "▲" : "▼"}</span>
-      </div>
-      {open && (
-        <p style={{ ...S.p, marginTop: "0.5rem", marginBottom: 0 }}>{a}</p>
+        {label}
+        {required && <span style={{ color: "#ef4444" }}> *</span>}
+      </label>
+      {textarea ? (
+        <textarea
+          value={form[k]}
+          onChange={(e) => set(k, e.target.value)}
+          placeholder={placeholder}
+          rows={4}
+          style={{
+            background: "var(--bg3)",
+            border: `1px solid ${errors[k] ? "var(--red)" : "var(--border)"}`,
+            borderRadius: "8px",
+            padding: "8px 12px",
+            color: "var(--text)",
+            fontSize: "0.85rem",
+            width: "100%",
+            boxSizing: "border-box",
+            resize: "vertical",
+            fontFamily: k.includes("script") || k.includes("request") || k.includes("response") ? "JetBrains Mono,monospace" : "inherit",
+          }}
+        />
+      ) : (
+        <input
+          type={type}
+          value={form[k]}
+          onChange={(e) => set(k, e.target.value)}
+          placeholder={placeholder}
+          style={{
+            background: "var(--bg3)",
+            border: `1px solid ${errors[k] ? "var(--red)" : "var(--border)"}`,
+            borderRadius: "8px",
+            padding: "8px 12px",
+            color: "var(--text)",
+            fontSize: "0.85rem",
+            width: "100%",
+            boxSizing: "border-box",
+          }}
+        />
+      )}
+      {errors[k] && (
+        <div style={{ color: "#ef4444", fontSize: "0.72rem", marginTop: "3px" }}>
+          ⚠️ {errors[k]}
+        </div>
       )}
     </div>
   );
-}
 
-export default function AboutPage() {
+  if (submitted) {
+    return (
+      <div style={{ maxWidth: "720px", margin: "0 auto" }}>
+        <div
+          style={{
+            ...S.section,
+            textAlign: "center",
+            padding: "3rem 2rem",
+          }}
+        >
+          <div style={{ fontSize: "4rem", marginBottom: "1rem" }}>🎉</div>
+          <h2 style={{ ...S.h2, justifyContent: "center", fontSize: "1.5rem" }}>
+            Tool Submitted!
+          </h2>
+          <p style={S.p}>
+            Your tool <strong>{form.name}</strong> has been submitted for review.
+          </p>
+          <p style={S.p}>
+            To complete listing, send <strong>{tiers[selectedTier].listingFee} XRP</strong> to the
+            address provided in your confirmation email.
+          </p>
+          <div
+            style={{
+              background: "var(--bg2)",
+              borderRadius: "8px",
+              padding: "1rem",
+              margin: "1.5rem 0",
+              fontFamily: "JetBrains Mono,monospace",
+              fontSize: "0.85rem",
+            }}
+          >
+            <div style={{ color: "var(--muted)", fontSize: "0.75rem", marginBottom: "0.5rem" }}>
+              LISTING FEE
+            </div>
+            <div style={{ color: "#22c55e", fontWeight: 700, fontSize: "1.2rem" }}>
+              {tiers[selectedTier].listingFee} XRP
+            </div>
+            <div style={{ color: "var(--muted)", fontSize: "0.75rem", marginTop: "0.5rem" }}>
+              + {tiers[selectedTier].transactionFee} transaction fee on all sales
+            </div>
+          </div>
+          <button
+            onClick={() => navigate("/")}
+            style={{
+              background: "linear-gradient(135deg,#0ea5e9,#7c3aed)",
+              color: "#fff",
+              border: "none",
+              borderRadius: "8px",
+              padding: "12px 24px",
+              fontWeight: 600,
+              fontSize: "0.9rem",
+              cursor: "pointer",
+            }}
+          >
+            Back to Marketplace
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div style={{ maxWidth: "720px" }}>
-      <div style={{ marginBottom: "2rem" }}>
-        <h1 style={{ fontSize: "1.8rem", fontWeight: 800, marginBottom: "0.4rem" }}>About AgentPay</h1>
-        <p style={{ color: "var(--muted)", fontSize: "0.9rem", lineHeight: 1.6 }}>
-          Transparency about who we are, what we offer, how payments work, and how to get help.
+    <div style={{ maxWidth: "900px", margin: "0 auto" }}>
+      {/* Header */}
+      <div style={{ marginBottom: "2rem", textAlign: "center" }}>
+        <h1
+          style={{
+            fontSize: "clamp(1.8rem, 4vw, 2.4rem)",
+            fontWeight: 800,
+            marginBottom: "0.75rem",
+            background: "linear-gradient(135deg,#e2e8f0 30%,#0ea5e9)",
+            WebkitBackgroundClip: "text",
+            WebkitTextFillColor: "transparent",
+          }}
+        >
+          List Your Tool
+        </h1>
+        <p style={{ color: "var(--muted)", fontSize: "0.95rem", maxWidth: "600px", margin: "0 auto", lineHeight: 1.6 }}>
+          Monetize your AI tools on the AgentPay marketplace. Set your price per call,
+          keep 92-97% of revenue, and get paid instantly in XRP.
         </p>
       </div>
 
-      {/* ── Project Identity ── */}
+      {/* Pricing Tiers */}
       <div style={S.section}>
-        <h2 style={S.h2}>⚡ What is AgentPay?</h2>
+        <h2 style={S.h2}>💰 Choose Your Tier</h2>
         <p style={S.p}>
-          AgentPay is an <strong style={{ color: "var(--text)" }}>independent open-source project</strong> that
-          builds a pay-per-call AI tool marketplace on the XRP Ledger using the x402 payment protocol.
+          One-time listing fee + small transaction fee on each paid call. No monthly charges.
         </p>
-        <p style={S.p}>
-          We offer both <strong style={{ color: "var(--text)" }}>free open-source tools</strong> you can self-host
-          and <strong style={{ color: "var(--text)" }}>premium paid tools</strong> that operate on a pay-per-call
-          basis with no subscriptions or API keys required.
-        </p>
-        <p style={S.p}>
-          It is <strong style={{ color: "var(--text)" }}>not affiliated with, endorsed by, or operated by
-          Ripple Labs, the XRP Ledger Foundation, or any other organization.</strong>
-        </p>
-      </div>
-
-      {/* ── What We Offer ── */}
-      <div style={S.section}>
-        <h2 style={S.h2}>🛠️ What We Offer</h2>
-        
-        <div style={{ marginBottom: "1rem" }}>
-          <div style={{ fontSize: "0.75rem", color: "var(--muted)", fontWeight: 700, letterSpacing: "0.08em", marginBottom: "0.75rem" }}>
-            FREE & OPEN SOURCE TOOLS
-          </div>
-          <p style={S.p}>
-            Community-maintained tools you can deploy to your own AI agent with one script.
-            No payment required — call hosted endpoints directly or self-host.
-          </p>
-        </div>
-
-        <div style={{ marginBottom: "1rem" }}>
-          <div style={{ fontSize: "0.75rem", color: "var(--muted)", fontWeight: 700, letterSpacing: "0.08em", marginBottom: "0.75rem" }}>
-            PREMIUM PAID TOOLS — PAY PER CALL
-          </div>
-          <p style={S.p}>
-            Verified provider tools with instant XRP settlement on the XRPL via x402 protocol.
-            No API keys needed — cryptographic payment proofs are your credentials.
-          </p>
-          
-          <div style={{ display: "grid", gap: "0.5rem", marginTop: "0.75rem" }}>
-            {[
-              { name: "Web Scraper", price: "0.01", desc: "Extract content from any URL", drops: "10,000" },
-              { name: "Price Oracle", price: "0.005", desc: "Real-time XRP/USD price feed", drops: "5,000" },
-              { name: "AI Summarizer", price: "0.02", desc: "Summarize long-form content", drops: "20,000" },
-              { name: "DeFi Data", price: "0.01", desc: "DeFi protocol analytics & data", drops: "10,000" },
-              { name: "Codex Search", price: "0.03", desc: "Code & documentation search", drops: "30,000" },
-            ].map((tool) => (
-              <div key={tool.name} style={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-                background: "var(--bg2)",
-                borderRadius: "8px",
-                padding: "0.75rem 1rem",
-                border: "1px solid var(--border)",
-              }}>
-                <div>
-                  <div style={{ fontWeight: 600, fontSize: "0.85rem", color: "var(--text)" }}>{tool.name}</div>
-                  <div style={{ fontSize: "0.75rem", color: "var(--muted)" }}>{tool.desc}</div>
+        <div style={{ display: "flex", gap: "1rem", flexWrap: "wrap", marginTop: "1rem" }}>
+          {Object.entries(tiers).map(([key, tier]) => (
+            <div
+              key={key}
+              onClick={() => setSelectedTier(key)}
+              style={S.tierCard(selectedTier === key)}
+            >
+              {tier.recommended && (
+                <div
+                  style={{
+                    background: "linear-gradient(135deg,#0ea5e9,#7c3aed)",
+                    color: "#fff",
+                    fontSize: "0.65rem",
+                    fontWeight: 700,
+                    padding: "2px 8px",
+                    borderRadius: "99px",
+                    display: "inline-block",
+                    marginBottom: "0.5rem",
+                  }}
+                >
+                  RECOMMENDED
                 </div>
-                <div style={{ textAlign: "right" }}>
-                  <div style={{ fontWeight: 700, fontSize: "0.85rem", color: "#f59e0b" }}>{tool.price} XRP</div>
-                  <div style={{ fontSize: "0.7rem", color: "var(--muted)" }}>{tool.drops} drops</div>
-                </div>
+              )}
+              <div
+                style={{
+                  fontSize: "1.25rem",
+                  fontWeight: 700,
+                  color: tier.color,
+                  marginBottom: "0.25rem",
+                }}
+              >
+                {tier.name}
               </div>
-            ))}
-          </div>
-        </div>
-
-        <div style={{ marginTop: "1rem", padding: "0.75rem", background: "rgba(34,197,94,0.05)", borderRadius: "8px", border: "1px solid rgba(34,197,94,0.2)" }}>
-          <p style={{ ...S.p, marginBottom: 0, fontSize: "0.82rem" }}>
-            <strong style={{ color: "#22c55e" }}>💡 Developer?</strong> You can list your own paid tools via the{" "}
-            <a href="/_ap" style={S.link}>Admin Panel</a> and earn XRP per call.
-          </p>
-        </div>
-      </div>
-
-      {/* ── t54 Relationship ── */}
-      <div style={S.section}>
-        <h2 style={S.h2}>
-          🔗 Relationship to t54 Labs
-          <span style={S.badge}>Third-party integration</span>
-        </h2>
-        <p style={S.p}>
-          AgentPay uses the <strong style={{ color: "var(--text)" }}>XRPL x402 facilitator</strong> operated
-          by <a href="https://xrpl-x402.t54.ai" target="_blank" rel="noreferrer" style={S.link}>t54 Labs</a> to
-          verify and settle on-chain payments. This is an <strong style={{ color: "var(--text)" }}>official
-          public product</strong> by t54 Labs — AgentPay integrates it as a third-party service, the same way
-          an app might use Stripe for payments.
-        </p>
-        <p style={S.p}>
-          t54 Labs operates the facilitator at <code style={{ background: "var(--bg3)", padding: "1px 5px", borderRadius: "4px", fontSize: "0.82em" }}>xrpl-x402.t54.ai</code>.
-          AgentPay does not control, modify, or own that infrastructure.
-        </p>
-        <div style={{ marginTop: "0.75rem" }}>
-          <a href="https://xrpl-x402.t54.ai/docs" target="_blank" rel="noreferrer" style={S.pill("#0ea5e9")}>
-            📄 t54 x402 Docs ↗
-          </a>
-          <a href="https://xrpl-x402.t54.ai" target="_blank" rel="noreferrer" style={S.pill("#06b6d4")}>
-            🌐 t54 Labs ↗
-          </a>
-        </div>
-      </div>
-
-      {/* ── Support ── */}
-      <div style={S.section}>
-        <h2 style={S.h2}>💬 Support</h2>
-        <p style={S.p}>
-          Need help? We respond to all support requests within 24 hours.
-        </p>
-        <div style={{ display: "flex", flexWrap: "wrap", gap: "0.5rem", marginBottom: "1rem" }}>
-          <a href="mailto:officialagentpay@gmail.com" style={S.pill("#22c55e")}>
-            ✉️ officialagentpay@gmail.com
-          </a>
-          <a href="https://github.com/xrpex/agentpay-backend/issues" target="_blank" rel="noreferrer" style={S.pill("#8b5cf6")}>
-            🐛 GitHub Issues ↗
-          </a>
-        </div>
-
-        {/* FAQ */}
-        <div style={{ marginTop: "1rem" }}>
-          <div style={{ fontSize: "0.75rem", color: "var(--muted)", fontWeight: 700, letterSpacing: "0.08em", marginBottom: "0.5rem" }}>
-            FREQUENTLY ASKED QUESTIONS
-          </div>
-          <AccordionItem
-            q="Which wallets can I use to pay for tools?"
-            a="Any XRPL-compatible wallet that can sign and submit Payment transactions. Tools currently accept XRP on XRPL Testnet (xrpl:0) and Mainnet (xrpl:1)."
-          />
-          <AccordionItem
-            q="Why did my payment go through but the tool returned an error?"
-            a="Tool errors after payment are logged. Email officialagentpay@gmail.com with the transaction hash and timestamp — we will investigate and issue a refund if the error was on our side."
-          />
-          <AccordionItem
-            q="Is my wallet address stored?"
-            a="Agent wallet addresses are logged in our Supabase database for usage tracking and dispute resolution. No private keys or seeds are ever transmitted or stored."
-          />
-          <AccordionItem
-            q="Can I run AgentPay myself?"
-            a="Yes — the full source code is open source on GitHub. You can self-host the backend on any Node.js platform and connect it to your own XRPL wallet."
-          />
-        </div>
-      </div>
-
-      {/* ── Dispute Resolution ── */}
-      <div style={S.section}>
-        <h2 style={S.h2}>⚖️ Dispute Resolution & Refund Policy</h2>
-        <p style={S.p}>
-          XRP transactions on the XRPL are <strong style={{ color: "var(--text)" }}>irreversible by design</strong> —
-          we cannot reverse on-chain payments. However, we can issue equivalent refunds under the following conditions:
-        </p>
-
-        <div style={{ display: "grid", gap: "0.75rem", marginBottom: "1rem" }}>
-          {[
-            { icon: "✅", title: "Eligible for refund", color: "#22c55e", items: [
-              "Tool returned a server error (5xx) after payment was accepted",
-              "Payment was charged twice for the same request",
-              "Tool was unavailable for more than 10 minutes after payment",
-            ]},
-            { icon: "❌", title: "Not eligible for refund", color: "#ef4444", items: [
-              "Tool executed successfully but result was not what you expected",
-              "Third-party API the tool depends on returned bad data",
-              "Payment sent to wrong address due to user error",
-            ]},
-          ].map((block) => (
-            <div key={block.title} style={{
-              background: "var(--bg2)", borderRadius: "8px", padding: "0.75rem 1rem",
-              border: `1px solid ${block.color}30`,
-            }}>
-              <div style={{ fontWeight: 600, fontSize: "0.82rem", color: block.color, marginBottom: "0.5rem" }}>
-                {block.icon} {block.title}
+              <div
+                style={{
+                  fontSize: "1.5rem",
+                  fontWeight: 800,
+                  color: "var(--text)",
+                  marginBottom: "0.5rem",
+                }}
+              >
+                {tier.price}
               </div>
-              <ul style={{ paddingLeft: "1.1rem", margin: 0 }}>
-                {block.items.map((item, i) => (
-                  <li key={i} style={{ color: "var(--muted)", fontSize: "0.82rem", lineHeight: 1.6 }}>{item}</li>
+              <div
+                style={{
+                  fontSize: "0.75rem",
+                  color: "var(--muted)",
+                  marginBottom: "1rem",
+                }}
+              >
+                + {tier.transactionFee} per transaction
+              </div>
+              <ul
+                style={{
+                  listStyle: "none",
+                  padding: 0,
+                  margin: 0,
+                  fontSize: "0.82rem",
+                  color: "var(--muted)",
+                }}
+              >
+                {tier.features.map((f, i) => (
+                  <li key={i} style={{ marginBottom: "0.4rem", display: "flex", alignItems: "center", gap: "0.4rem" }}>
+                    <span style={{ color: "#22c55e" }}>✓</span> {f}
+                  </li>
                 ))}
               </ul>
             </div>
           ))}
         </div>
-
-        <p style={S.p}>
-          To open a dispute, email <a href="mailto:officialagentpay@gmail.com" style={S.link}>officialagentpay@gmail.com</a> with
-          your <strong style={{ color: "var(--text)" }}>XRPL transaction hash</strong>, the tool called, and
-          the timestamp. We aim to resolve all disputes within 48 hours.
-        </p>
       </div>
 
-      {/* ── Legal ── */}
-      <div style={{ ...S.section, background: "var(--bg2)" }}>
-        <h2 style={S.h2}>📋 Legal</h2>
+      {/* Tool Form */}
+      <div style={S.section}>
+        <h2 style={S.h2}>🛠️ Tool Details</h2>
+
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0 1rem" }}>
+          <Field label="Tool ID" k="id" placeholder="my-ai-tool" required />
+          <Field label="Display Icon" k="icon" placeholder="🔧" />
+        </div>
+
+        <Field label="Tool Name" k="name" placeholder="My AI Tool" required />
+        <Field
+          label="Description"
+          k="description"
+          placeholder="What does your tool do? Be specific about capabilities and use cases."
+          required
+          textarea
+        />
+
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0 1rem" }}>
+          <div style={{ marginBottom: "0.85rem" }}>
+            <label
+              style={{
+                fontSize: "0.72rem",
+                fontWeight: 700,
+                color: "var(--muted)",
+                display: "block",
+                marginBottom: "4px",
+                textTransform: "uppercase",
+                letterSpacing: ".06em",
+              }}
+            >
+              Category
+            </label>
+            <select
+              value={form.category}
+              onChange={(e) => set("category", e.target.value)}
+              style={{
+                background: "var(--bg3)",
+                border: "1px solid var(--border)",
+                borderRadius: "8px",
+                padding: "8px 12px",
+                color: "var(--text)",
+                fontSize: "0.85rem",
+                width: "100%",
+                cursor: "pointer",
+              }}
+            >
+              {CATEGORIES.map((c) => (
+                <option key={c}>{c}</option>
+              ))}
+            </select>
+          </div>
+          <div style={{ marginBottom: "0.85rem" }}>
+            <label
+              style={{
+                fontSize: "0.72rem",
+                fontWeight: 700,
+                color: "var(--muted)",
+                display: "block",
+                marginBottom: "4px",
+                textTransform: "uppercase",
+                letterSpacing: ".06em",
+              }}
+            >
+              HTTP Method
+            </label>
+            <select
+              value={form.method}
+              onChange={(e) => set("method", e.target.value)}
+              style={{
+                background: "var(--bg3)",
+                border: "1px solid var(--border)",
+                borderRadius: "8px",
+                padding: "8px 12px",
+                color: "var(--text)",
+                fontSize: "0.85rem",
+                width: "100%",
+                cursor: "pointer",
+              }}
+            >
+              {METHODS.map((m) => (
+                <option key={m}>{m}</option>
+              ))}
+            </select>
+          </div>
+        </div>
+
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0 1rem" }}>
+          <Field label="API Path" k="path" placeholder="/tools/my-tool" required />
+          <Field
+            label="Price per Call (drops)"
+            k="price_drops"
+            placeholder="10000"
+            type="number"
+          />
+        </div>
+        <div
+          style={{
+            background: "rgba(245, 158, 11, 0.05)",
+            borderRadius: "6px",
+            padding: "0.5rem 0.75rem",
+            marginBottom: "1rem",
+            fontSize: "0.75rem",
+            color: "var(--muted)",
+          }}
+        >
+          💡 10,000 drops = 0.01 XRP (~$0.006). You keep 92-97% after platform fees.
+        </div>
+
+        <Field
+          label="Endpoint URL"
+          k="endpoint_url"
+          placeholder="https://your-server.com/tools/my-tool"
+          required
+        />
+
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0 1rem" }}>
+          <Field label="Your Name / Org" k="provider" placeholder="Acme AI" required />
+          <Field
+            label="Contact Email"
+            k="provider_email"
+            placeholder="you@example.com"
+            required
+            type="email"
+          />
+        </div>
+
+        <Field label="GitHub Repository" k="github" placeholder="https://github.com/..." />
+        <Field label="Documentation URL" k="docs_url" placeholder="https://docs.example.com" />
+
+        <Field
+          label="Deploy Script (optional)"
+          k="deploy_script"
+          placeholder="# One-command deploy for self-hosters
+docker run -p 8080:8080 your-image"
+          textarea
+        />
+
+        <Field
+          label="Example Request"
+          k="example_request"
+          placeholder="curl -X POST https://api.example.com/tools/my-tool \\
+  -H 'Content-Type: application/json' \\
+  -d '{\"input\": \"test\"}'"
+          textarea
+        />
+
+        <Field
+          label="Example Response"
+          k="example_response"
+          placeholder='{
+  "result": "processed",
+  "output": "..."
+}'
+          textarea
+        />
+      </div>
+
+      {/* Submit Section */}
+      <div style={S.section}>
+        <h2 style={S.h2}>🚀 Submit for Review</h2>
         <p style={S.p}>
-          AgentPay is provided <strong style={{ color: "var(--text)" }}>"as is"</strong> without warranty.
-          By using the service you accept that XRP payments are irreversible and that tool availability
-          is not guaranteed. This service does not constitute financial advice.
+          Your tool will be reviewed within 24 hours. Upon approval, you'll receive
+          payment instructions for the {tiers[selectedTier].listingFee} XRP listing fee.
         </p>
-        <p style={{ ...S.p, marginBottom: 0 }}>
-          © 2026 AgentPay · Independent project ·{" "}
-          <a href="mailto:officialagentpay@gmail.com" style={S.link}>officialagentpay@gmail.com</a>
+
+        <div
+          style={{
+            background: "var(--bg2)",
+            borderRadius: "8px",
+            padding: "1rem",
+            marginBottom: "1.5rem",
+          }}
+        >
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              marginBottom: "0.5rem",
+            }}
+          >
+            <span style={{ color: "var(--muted)", fontSize: "0.85rem" }}>Listing Fee</span>
+            <span style={{ fontWeight: 700, color: "var(--text)" }}>
+              {tiers[selectedTier].listingFee} XRP
+            </span>
+          </div>
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              marginBottom: "0.5rem",
+            }}
+          >
+            <span style={{ color: "var(--muted)", fontSize: "0.85rem" }}>
+              Transaction Fee
+            </span>
+            <span style={{ fontWeight: 700, color: "var(--text)" }}>
+              {tiers[selectedTier].transactionFee}
+            </span>
+          </div>
+          <div
+            style={{
+              borderTop: "1px solid var(--border)",
+              marginTop: "0.5rem",
+              paddingTop: "0.5rem",
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+            }}
+          >
+            <span style={{ color: "var(--muted)", fontSize: "0.85rem" }}>
+              You Earn (per 0.01 XRP call)
+            </span>
+            <span style={{ fontWeight: 700, color: "#22c55e" }}>
+              ~{(0.01 * (1 - parseInt(tiers[selectedTier].transactionFee) / 100)).toFixed(4)} XRP
+            </span>
+          </div>
+        </div>
+
+        <button
+          onClick={handleSubmit}
+          disabled={submitting}
+          style={{
+            background: submitting
+              ? "var(--bg3)"
+              : "linear-gradient(135deg,#0ea5e9,#7c3aed)",
+            color: "#fff",
+            border: "none",
+            borderRadius: "8px",
+            padding: "12px 24px",
+            fontWeight: 600,
+            fontSize: "0.9rem",
+            cursor: submitting ? "not-allowed" : "pointer",
+            width: "100%",
+          }}
+        >
+          {submitting ? "Submitting..." : `Submit Tool — ${tiers[selectedTier].price}`}
+        </button>
+
+        <p
+          style={{
+            color: "var(--muted)",
+            fontSize: "0.75rem",
+            textAlign: "center",
+            marginTop: "1rem",
+          }}
+        >
+          By submitting, you agree to our{" "}
+          <a href="/about" style={S.link}>
+            Terms of Service
+          </a>{" "}
+          and{" "}
+          <a href="/about" style={S.link}>
+            Developer Agreement
+          </a>
+          .
         </p>
       </div>
     </div>
