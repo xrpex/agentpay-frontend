@@ -52,7 +52,6 @@ export default function Layout() {
       <nav style={nav}>
         <span style={logo}>⚡ AgentPay</span>
         <NavLink to="/" style={link}>Marketplace</NavLink>
-        <NavLink to="/dashboard" style={link}>Dashboard</NavLink>
         <NavLink to="/about" style={link}>About</NavLink>
         <span style={badge}>x402 · XRPL</span>
       </nav>
