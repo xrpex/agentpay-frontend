@@ -441,6 +441,81 @@ function SystemTab() {
   );
 }
 
+// ── Settings Tab ──────────────────────────────────────────────────────────────
+function SettingsTab() {
+  const [donationAddress, setDonationAddress] = useState(() => {
+    return localStorage.getItem("agentpay_donation_address") || "rAgentPayDonationAddressXXXXXXXXXXXXXXXX";
+  });
+  const [saved, setSaved] = useState(false);
+
+  function saveSettings() {
+    localStorage.setItem("agentpay_donation_address", donationAddress);
+    setSaved(true);
+    setTimeout(() => setSaved(false), 2000);
+  }
+
+  return (
+    <div>
+      <div style={card}>
+        <h3 style={{ fontSize: "0.95rem", fontWeight: 700, marginBottom: "1.25rem" }}>⚙️ Project Settings</h3>
+        
+        <div style={{ marginBottom: "1.5rem" }}>
+          <label style={{ fontSize: "0.72rem", fontWeight: 700, color: "var(--muted)", display: "block", marginBottom: "4px", textTransform: "uppercase", letterSpacing: ".06em" }}>
+            Donation / Listing Fee Address
+          </label>
+          <input
+            type="text"
+            value={donationAddress}
+            onChange={(e) => setDonationAddress(e.target.value)}
+            placeholder="rXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+            style={{
+              background: "var(--bg3)",
+              border: "1px solid var(--border)",
+              borderRadius: "8px",
+              padding: "8px 12px",
+              color: "var(--text)",
+              fontSize: "0.85rem",
+              width: "100%",
+              boxSizing: "border-box",
+              fontFamily: "JetBrains Mono,monospace",
+            }}
+          />
+          <p style={{ color: "var(--muted)", fontSize: "0.75rem", marginTop: "0.5rem" }}>
+            This address receives listing fee payments from developers. Displayed on the "List Your Tool" page.
+          </p>
+        </div>
+
+        {saved && (
+          <div style={{ background: "rgba(34,197,94,.1)", border: "1px solid rgba(34,197,94,.3)", borderRadius: "8px", padding: "0.6rem 1rem", color: "#22c55e", fontSize: "0.82rem", marginBottom: "0.75rem" }}>
+            ✅ Settings saved successfully
+          </div>
+        )}
+
+        <button onClick={saveSettings} style={{ ...btn("#0ea5e9") }}>
+          Save Settings
+        </button>
+      </div>
+
+      <div style={{ ...card, marginTop: "1rem" }}>
+        <h3 style={{ fontSize: "0.9rem", fontWeight: 700, marginBottom: "1rem" }}>📋 Pending Verifications</h3>
+        <p style={{ color: "var(--muted)", fontSize: "0.82rem" }}>
+          Tools awaiting payment verification will appear here. Check the transaction hash on XRPL explorer before approving.
+        </p>
+        <div style={{ marginTop: "1rem" }}>
+          <a 
+            href={`https://livenet.xrpl.org/accounts/${donationAddress}`} 
+            target="_blank" 
+            rel="noreferrer"
+            style={{ ...btn("#0ea5e9", true) }}
+          >
+            🔍 View Address on XRPL Explorer ↗
+          </a>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ── Main ──────────────────────────────────────────────────────────────────────
 export default function AdminPanelPage() {
   const [authed,setAuthed] = useState(()=>{
@@ -476,6 +551,7 @@ export default function AdminPanelPage() {
     {id:"agents",    label:"🤖 Agents"},
     {id:"calls",     label:"📋 Call Logs"},
     {id:"system",    label:"⚙️ System"},
+    {id:"settings",  label:"🔧 Settings"},
   ];
 
   return (
@@ -506,6 +582,7 @@ export default function AdminPanelPage() {
       {tab==="agents"    && <AgentsTab logs={logs} />}
       {tab==="calls"     && <CallsTab logs={logs} />}
       {tab==="system"    && <SystemTab />}
+      {tab==="settings"  && <SettingsTab />}
     </div>
   );
 }
