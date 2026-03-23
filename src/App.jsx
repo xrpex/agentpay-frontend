@@ -8,7 +8,7 @@ import DocsPage from "./pages/DocsPage.jsx";
 
 export default function App() {
   return (
-    <HashRouter>
+    <BrowserRouter>
       <Routes>
         <Route path="/" element={<Layout />}>
           <Route index element={<MarketplacePage />} />
@@ -17,6 +17,6 @@ export default function App() {
           <Route path="docs" element={<DocsPage />} />
         </Route>
       </Routes>
-    </HashRouter>
+    </BrowserRouter>
   );
 }
