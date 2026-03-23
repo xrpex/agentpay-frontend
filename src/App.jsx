@@ -4,6 +4,7 @@ import Layout from "./components/Layout.jsx";
 import MarketplacePage from "./pages/MarketplacePage.jsx";
 import ToolDetailPage from "./pages/ToolDetailPage.jsx";
 import AboutPage from "./pages/AboutPage.jsx";
+import ListToolPage from "./pages/ListToolPage.jsx"; 
 import AdminPanelPage from "./pages/AdminPanelPage.jsx";
 
 export default function App() {
@@ -14,6 +15,7 @@ export default function App() {
           <Route index element={<MarketplacePage />} />
           <Route path="tool/:id" element={<ToolDetailPage />} />
           <Route path="about" element={<AboutPage />} />
+          <Route path="list-tool" element={<ListToolPage />} /> {/* ADD THIS ROUTE */}
           {/* Hidden admin panel — not in nav */}
           <Route path="_ap" element={<AdminPanelPage />} />
           {/* All old routes redirect to admin panel */}
