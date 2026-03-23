@@ -12,6 +12,7 @@ const navStyle = {
   position: "sticky",
   top: 0,
   zIndex: 100,
+  overflowX: "auto",
 };
 
 const logoStyle = {
@@ -21,6 +22,7 @@ const logoStyle = {
   WebkitBackgroundClip: "text",
   WebkitTextFillColor: "transparent",
   marginRight: "auto",
+  flexShrink: 0,
 };
 
 const linkStyle = ({ isActive }) => ({
@@ -31,6 +33,7 @@ const linkStyle = ({ isActive }) => ({
   borderBottom: isActive ? "2px solid var(--accent)" : "2px solid transparent",
   textDecoration: "none",
   transition: "color 0.2s",
+  flexShrink: 0,
 });
 
 const badgeStyle = {
@@ -42,6 +45,7 @@ const badgeStyle = {
   borderRadius: "99px",
   marginLeft: "6px",
   verticalAlign: "middle",
+  flexShrink: 0,
 };
 
 export default function Layout() {
@@ -52,14 +56,7 @@ export default function Layout() {
         <NavLink to="/" style={linkStyle}>Marketplace</NavLink>
         <NavLink to="/dashboard" style={linkStyle}>Dashboard</NavLink>
         <NavLink to="/docs" style={linkStyle}>Docs</NavLink>
-        <a
-          href="https://xrpl-x402.t54.ai/docs"
-          target="_blank"
-          rel="noreferrer"
-          style={{ color: "var(--muted)", fontSize: "0.9rem", fontWeight: 500, textDecoration: "none" }}
-        >
-          x402 Docs ↗
-        </a>
+        <NavLink to="/about" style={linkStyle}>About</NavLink>
         <span style={badgeStyle}>x402 · XRPL</span>
       </nav>
       <main style={{ maxWidth: "1200px", margin: "0 auto", padding: "2rem" }}>
