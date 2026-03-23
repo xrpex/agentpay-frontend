@@ -519,19 +519,17 @@ docker run -p 8080:8080 your-image"
         <Field
           label="Example Request"
           k="example_request"
-          placeholder="curl -X POST https://api.example.com/tools/my-tool \\
-  -H 'Content-Type: application/json' \\
-  -d '{\"input\": \"test\"}'"
+          placeholder={`curl -X POST https://api.example.com/tools/my-tool -H 'Content-Type: application/json' -d '{"input": "test"}'`}
           textarea
         />
 
         <Field
           label="Example Response"
           k="example_response"
-          placeholder='{
+          placeholder={`{
   "result": "processed",
   "output": "..."
-}'
+}`}
           textarea
         />
       </div>
