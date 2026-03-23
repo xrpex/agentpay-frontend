@@ -91,8 +91,8 @@ export default function AboutPage() {
       <div style={S.section}>
         <h2 style={S.h2}>⚡ What is AgentPay?</h2>
         <p style={S.p}>
-          AgentPay is an <strong style={{ color: "var(--text)" }}>independent open-source project</strong> that
-          builds a pay-per-call AI tool marketplace on the XRP Ledger using the x402 payment protocol.
+          AgentPay is an <strong style={{ color: "var(--text)" }}>independent open-source marketplace</strong> that
+          offers a pay-per-call AI tools and skills on the XRP Ledger using the x402 payment protocol.
         </p>
         <p style={S.p}>
           We offer both <strong style={{ color: "var(--text)" }}>free open-source tools</strong> you can self-host
@@ -109,7 +109,7 @@ export default function AboutPage() {
       <div style={S.section}>
         <h2 style={S.h2}>🛠️ What We Offer</h2>
         
-        <div style={{ marginBottom: "1rem" }}>
+        <div style={{ marginBottom: "1.5rem" }}>
           <div style={{ fontSize: "0.75rem", color: "var(--muted)", fontWeight: 700, letterSpacing: "0.08em", marginBottom: "0.75rem" }}>
             FREE & OPEN SOURCE TOOLS
           </div>
@@ -160,8 +160,9 @@ export default function AboutPage() {
 
         <div style={{ marginTop: "1rem", padding: "0.75rem", background: "rgba(34,197,94,0.05)", borderRadius: "8px", border: "1px solid rgba(34,197,94,0.2)" }}>
           <p style={{ ...S.p, marginBottom: 0, fontSize: "0.82rem" }}>
-            <strong style={{ color: "#22c55e" }}>💡 Developer?</strong> You can list your own paid tools via the{" "}
-            <a href="/_ap" style={S.link}>Admin Panel</a> and earn XRP per call.
+            <strong style={{ color: "#22c55e" }}>💡 Developer?</strong> You can list your own paid tools via our{" "}
+            <a href="/list-tool" style={S.link}>List Your Tool</a> page and earn XRP per call.
+            Listing fees start at 5 XRP with 3-8% transaction fees.
           </p>
         </div>
       </div>
@@ -226,8 +227,12 @@ export default function AboutPage() {
             a="Agent wallet addresses are logged in our Supabase database for usage tracking and dispute resolution. No private keys or seeds are ever transmitted or stored."
           />
           <AccordionItem
-            q="Can I run AgentPay myself?"
-            a="Yes — the full source code is open source on GitHub. You can self-host the backend on any Node.js platform and connect it to your own XRPL wallet."
+            q="Can I run AgentPay Tools on any AI?"
+            a="Yes , A one script deploy is provided with instruction on how you can self-host and set-up."
+          />
+          <AccordionItem
+            q="How do I list my own tool?"
+            a="Visit our List Your Tool page to submit your tool for review. You'll pay a one-time listing fee (5-50 XRP) and we take 3-8% per transaction depending on your tier."
           />
         </div>
       </div>
@@ -292,5 +297,3 @@ export default function AboutPage() {
     </div>
   );
 }
-       
-
