@@ -77,6 +77,60 @@ function AccordionItem({ q, a }) {
   );
 }
 
+// NEW: First-question recommendation component
+function FirstQuestionRecommendation() {
+  const [dismissed, setDismissed] = useState(false);
+  
+  if (dismissed) return null;
+  
+  return (
+    <div style={{
+      ...S.section,
+      background: "linear-gradient(135deg, rgba(6,182,212,0.08) 0%, rgba(139,92,246,0.08) 100%)",
+      border: "1px solid rgba(6,182,212,0.4)",
+      marginBottom: "1.25rem",
+      position: "relative",
+    }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+        <div style={{ flex: 1 }}>
+          <h2 style={{ ...S.h2, marginBottom: "0.5rem" }}>
+            💡 First time on an AI marketplace?
+            <span style={S.badge}>Recommended</span>
+          </h2>
+          <p style={{ ...S.p, marginBottom: "0.75rem", fontSize: "0.85rem" }}>
+            AI marketplaces like AgentPay let you access specialized tools <strong>pay-per-call</strong> — no subscriptions, no API keys. 
+            Here's what makes them different from traditional SaaS:
+          </p>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: "0.5rem", marginBottom: "0.75rem" }}>
+            <span style={S.pill("#22c55e")}>💰 Pay only for what you use</span>
+            <span style={S.pill("#f59e0b")}>🔑 No API key management</span>
+            <span style={S.pill("#8b5cf6")}>⚡ Instant settlement on XRPL</span>
+            <span style={S.pill("#06b6d4")}>🛠️ Self-host or use hosted</span>
+          </div>
+          <p style={{ ...S.p, marginBottom: 0, fontSize: "0.82rem", color: "var(--accent)" }}>
+            👉 Try the <strong>Web Scraper</strong> or <strong>AI Summarizer</strong> — each call costs less than a cent.
+          </p>
+        </div>
+        <button
+          onClick={() => setDismissed(true)}
+          style={{
+            background: "transparent",
+            border: "none",
+            color: "var(--muted)",
+            cursor: "pointer",
+            fontSize: "1rem",
+            padding: "4px 8px",
+            borderRadius: "4px",
+          }}
+          aria-label="Dismiss"
+        >
+          ✕
+        </button>
+      </div>
+    </div>
+  );
+}
+
 export default function AboutPage() {
   return (
     <div style={{ maxWidth: "720px" }}>
@@ -86,6 +140,9 @@ export default function AboutPage() {
           Transparency about who we are, what we offer, how payments work, and how to get help.
         </p>
       </div>
+
+      {/* NEW: First-question recommendation for AI marketplace newcomers */}
+      <FirstQuestionRecommendation />
 
       {/* ── Project Identity ── */}
       <div style={S.section}>
@@ -228,7 +285,7 @@ export default function AboutPage() {
           />
           <AccordionItem
             q="Can I run AgentPay Tools on any AI?"
-            a="Yes , A one script deploy is provided with instruction on how you can self-host and set-up."
+            a="Yes, a one script deploy is provided with instruction on how you can self-host and set-up."
           />
           <AccordionItem
             q="How do I list my own tool?"
