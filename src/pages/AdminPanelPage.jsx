@@ -1,12 +1,15 @@
 import React, { useState, useEffect, useCallback } from "react";
 
-const ADMIN_PW   = import.meta.env.VITE_ADMIN_PASSWORD ?? "agentpay2026";
+const ADMIN_PW   = import.meta.env.VITE_ADMIN_PASSWORD;
 const SESSION_KEY = "agentpay_ap_auth";
 const SESSION_TTL = 1000 * 60 * 60 * 8;
 const BASE        = import.meta.env.VITE_BACKEND_URL ?? "https://agentpay-backend-production.up.railway.app";
 const SUPABASE_URL  = import.meta.env.VITE_SUPABASE_URL;
 const SUPABASE_ANON = import.meta.env.VITE_SUPABASE_ANON_KEY;
-const SUPABASE_SVC  = import.meta.env.VITE_SUPABASE_SERVICE_KEY; // optional for writes
+const SUPABASE_SVC  = import.meta.env.VITE_SUPABASE_SERVICE_KEY;
+
+
+const DONATION_ADDRESS = import.meta.env.VITE_DONATION_ADDRESS || "rAgentPayDonationAddressXXXXXXXXXXXXXXXX";
 
 const TOOL_ICONS  = { "web-scraper":"🌐","price-oracle":"📈","ai-summarizer":"🤖","defi-feed":"💹","code-executor":"⚡" };
 const TOOL_COLORS = { "web-scraper":"#0ea5e9","price-oracle":"#22c55e","ai-summarizer":"#a855f7","defi-feed":"#f59e0b","code-executor":"#ef4444" };
@@ -444,9 +447,13 @@ function SystemTab() {
 // ── Settings Tab ──────────────────────────────────────────────────────────────
 function SettingsTab() {
   const [donationAddress, setDonationAddress] = useState(() => {
-    return localStorage.getItem("agentpay_donation_address") || "rAgentPayDonationAddressXXXXXXXXXXXXXXXX";
+    // Priority: localStorage > env var > fallback
+    return localStorage.getItem("agentpay_donation_address") || 
+           DONATION_ADDRESS || 
+           "rAgentPayDonationAddressXXXXXXXXXXXXXXXX";
   });
   const [saved, setSaved] = useState(false);
+  const [showEnvWarning, setShowEnvWarning] = useState(!import.meta.env.VITE_DONATION_ADDRESS);
 
   function saveSettings() {
     localStorage.setItem("agentpay_donation_address", donationAddress);
@@ -459,6 +466,20 @@ function SettingsTab() {
       <div style={card}>
         <h3 style={{ fontSize: "0.95rem", fontWeight: 700, marginBottom: "1.25rem" }}>⚙️ Project Settings</h3>
         
+        {showEnvWarning && (
+          <div style={{ 
+            background: "rgba(245, 158, 11, 0.1)", 
+            border: "1px solid rgba(245, 158, 11, 0.3)", 
+            borderRadius: "8px", 
+            padding: "0.75rem 1rem", 
+            marginBottom: "1rem",
+            color: "#f59e0b",
+            fontSize: "0.82rem"
+          }}>
+            ⚠️ <strong>Environment variable not set.</strong> Add <code style={{ background: "rgba(0,0,0,0.2)", padding: "2px 4px", borderRadius: "4px" }}>VITE_DONATION_ADDRESS</code> to your Vercel/project environment for production use.
+          </div>
+        )}
+
         <div style={{ marginBottom: "1.5rem" }}>
           <label style={{ fontSize: "0.72rem", fontWeight: 700, color: "var(--muted)", display: "block", marginBottom: "4px", textTransform: "uppercase", letterSpacing: ".06em" }}>
             Donation / Listing Fee Address
@@ -482,12 +503,17 @@ function SettingsTab() {
           />
           <p style={{ color: "var(--muted)", fontSize: "0.75rem", marginTop: "0.5rem" }}>
             This address receives listing fee payments from developers. Displayed on the "List Your Tool" page.
+            {import.meta.env.VITE_DONATION_ADDRESS && (
+              <span style={{ color: "#22c55e", display: "block", marginTop: "0.25rem" }}>
+                ✓ Environment variable configured
+              </span>
+            )}
           </p>
         </div>
 
         {saved && (
           <div style={{ background: "rgba(34,197,94,.1)", border: "1px solid rgba(34,197,94,.3)", borderRadius: "8px", padding: "0.6rem 1rem", color: "#22c55e", fontSize: "0.82rem", marginBottom: "0.75rem" }}>
-            ✅ Settings saved successfully
+            ✅ Settings saved to localStorage
           </div>
         )}
 
@@ -501,7 +527,7 @@ function SettingsTab() {
         <p style={{ color: "var(--muted)", fontSize: "0.82rem" }}>
           Tools awaiting payment verification will appear here. Check the transaction hash on XRPL explorer before approving.
         </p>
-        <div style={{ marginTop: "1rem" }}>
+        <div style={{ marginTop: "1rem", display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>
           <a 
             href={`https://livenet.xrpl.org/accounts/${donationAddress}`} 
             target="_blank" 
@@ -510,6 +536,30 @@ function SettingsTab() {
           >
             🔍 View Address on XRPL Explorer ↗
           </a>
+          <a 
+            href={`https://testnet.xrpl.org/accounts/${donationAddress}`} 
+            target="_blank" 
+            rel="noreferrer"
+            style={{ ...btn("#64748b", true) }}
+          >
+            🔍 Testnet Explorer ↗
+          </a>
+        </div>
+      </div>
+
+      <div style={{ ...card, marginTop: "1rem", background: "var(--bg2)" }}>
+        <h3 style={{ fontSize: "0.85rem", fontWeight: 700, marginBottom: "0.75rem" }}>🔧 Environment Configuration</h3>
+        <div style={{ fontSize: "0.78rem", color: "var(--muted)", fontFamily: "JetBrains Mono,monospace" }}>
+          <div style={{ marginBottom: "0.5rem" }}>
+            <span style={{ color: "#64748b" }}>VITE_DONATION_ADDRESS=</span>
+            <span style={{ color: import.meta.env.VITE_DONATION_ADDRESS ? "#22c55e" : "#ef4444" }}>
+              {import.meta.env.VITE_DONATION_ADDRESS || "not set"}
+            </span>
+          </div>
+          <div>
+            <span style={{ color: "#64748b" }}>Current active address: </span>
+            <span style={{ color: "var(--accent)" }}>{donationAddress.slice(0, 20)}...</span>
+          </div>
         </div>
       </div>
     </div>
