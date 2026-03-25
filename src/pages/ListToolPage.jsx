@@ -74,8 +74,7 @@ const S = {
 const CATEGORIES = ["AI", "Data", "Finance", "Dev", "Other"];
 const METHODS = ["GET", "POST", "PUT", "DELETE"];
 
-// Donation address - in production, fetch from backend
-const DONATION_ADDRESS = "rAgentPayDonationAddressXXXXXXXXXXXXXXXX"; // Replace with actual address
+const DONATION_ADDRESS = import.meta.env.VITE_DONATION_ADDRESS || "rAgentPayDonationAddressXXXXXXXXXXXXXXXX";
 
 const EMPTY_TOOL = {
   id: "",
