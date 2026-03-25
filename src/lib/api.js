@@ -1,229 +1,537 @@
-// src/lib/api.js
-const BASE = import.meta.env.VITE_BACKEND_URL ?? "https://agentpay-backend-production.up.railway.app";
-const SUPABASE_URL  = import.meta.env.VITE_SUPABASE_URL;
-const SUPABASE_ANON = import.meta.env.VITE_SUPABASE_ANON_KEY;
+// src/lib/api.js - AgentPay tool management and API integration
 
-// ── Free tools — open source, no payment required ─────────────────────────────
+// ─────────────────────────────────────────────────────────────────────────────
+// FREE TOOLS (Open Source - Community Maintained)
+// ─────────────────────────────────────────────────────────────────────────────
+
 export const FREE_TOOLS = [
   {
     id: "web-scraper",
     name: "Web Scraper",
-    description: "Returns clean Markdown text from any public URL. Pass ?url= in query string.",
+    description: "Extract content from any URL with smart parsing. Returns clean text, metadata, and structured data.",
     category: "Data",
-    icon: "🌐",
-    method: "GET",
-    path: "/tools/web-scraper",
+    icon: "🕷️",
+    path: "/api/tools/web-scraper",
+    method: "POST",
     free: true,
-    github: "https://github.com/xrpex/agentpay-backend",
-    deploy_script: `# Web Scraper — One-script deploy
-# Requires: Node.js 18+, Express
+    github: "https://github.com/xrpex/agentpay-tools/tree/main/web-scraper",
+    docs_url: "https://agentpay-frontend-theta.vercel.app/docs/web-scraper",
+    deploy_script: `#!/bin/bash
+# Deploy Web Scraper to your own server
+git clone https://github.com/xrpex/agentpay-tools.git
+cd agentpay-tools/web-scraper
+npm install
+npm start
 
-npm install express node-fetch dotenv cors
-
-# Create scraper.js:
-cat > scraper.js << 'EOF'
-import express from "express";
-import fetch from "node-fetch";
-const app = express();
-app.get("/scrape", async (req, res) => {
-  const { url } = req.query;
-  if (!url) return res.status(400).json({ error: "?url= required" });
-  const r = await fetch(decodeURIComponent(url));
-  const html = await r.text();
-  const text = html.replace(/<[^>]+>/g," ").replace(/\\s{2,}/g,"\\n").trim().slice(0,8000);
-  res.json({ url, chars: text.length, content: text });
-});
-app.listen(3000, () => console.log("Scraper running on :3000"));
-EOF
-
-node scraper.js`,
-    example_request: `curl "https://agentpay-backend-production.up.railway.app/tools/web-scraper?url=https://example.com"`,
-    example_response: `{ "url": "https://example.com", "chars": 1256, "content": "Example Domain..." }`,
+# Or use Docker:
+# docker run -p 3000:3000 xrpex/web-scraper`,
+    example_request: `curl -X POST https://your-server.com/api/tools/web-scraper \\
+  -H "Content-Type: application/json" \\
+  -d '{"url": "https://example.com", "format": "markdown"}'`,
+    example_response: `{
+  "success": true,
+  "data": {
+    "title": "Example Domain",
+    "content": "# Example Domain\\n\\nThis domain is for use...",
+    "metadata": {
+      "description": "Example domain description",
+      "wordCount": 124
+    }
+  }
+}`,
+    schema: {
+      type: "object",
+      properties: {
+        url: { type: "string", format: "uri", description: "URL to scrape" },
+        format: { type: "string", enum: ["text", "markdown", "html"], default: "markdown" }
+      },
+      required: ["url"]
+    }
   },
   {
     id: "price-oracle",
-    name: "XRP Price Oracle",
-    description: "Returns live XRP/USD, XRP/BTC, XRP/EUR prices from CoinGecko.",
+    name: "Price Oracle",
+    description: "Real-time XRP/USD price feed from multiple exchanges. Returns current price, 24h change, and volume.",
     category: "Finance",
-    icon: "📈",
+    icon: "📊",
+    path: "/api/tools/price-oracle",
     method: "GET",
-    path: "/tools/price-oracle",
     free: true,
-    github: "https://github.com/xrpex/agentpay-backend",
-    deploy_script: `# XRP Price Oracle — One-script deploy
-# Requires: Node.js 18+
-
-npm install express node-fetch
-
-cat > price-oracle.js << 'EOF'
-import express from "express";
-import fetch from "node-fetch";
-const app = express();
-app.get("/price", async (_req, res) => {
-  const r = await fetch(
-    "https://api.coingecko.com/api/v3/simple/price?ids=ripple&vs_currencies=usd,btc,eur"
-  );
-  const data = await r.json();
-  res.json({ XRP: data.ripple, timestamp: new Date().toISOString() });
-});
-app.listen(3001, () => console.log("Price oracle on :3001"));
-EOF
-
-node price-oracle.js`,
-    example_request: `curl "https://agentpay-backend-production.up.railway.app/tools/price-oracle"`,
-    example_response: `{ "XRP": { "usd": 2.14, "btc": 0.000023, "eur": 1.97 }, "timestamp": "2026-03-23T..." }`,
+    github: "https://github.com/xrpex/agentpay-tools/tree/main/price-oracle",
+    docs_url: "https://agentpay-frontend-theta.vercel.app/docs/price-oracle",
+    deploy_script: `#!/bin/bash
+# Deploy Price Oracle
+git clone https://github.com/xrpex/agentpay-tools.git
+cd agentpay-tools/price-oracle
+npm install
+npm start`,
+    example_request: `curl https://your-server.com/api/tools/price-oracle?currency=XRP`,
+    example_response: `{
+  "success": true,
+  "data": {
+    "symbol": "XRP/USD",
+    "price": 0.5234,
+    "change_24h": 2.34,
+    "volume_24h": 1250000000,
+    "timestamp": "2026-03-25T10:30:00Z"
+  }
+}`,
+    schema: {
+      type: "object",
+      properties: {
+        currency: { type: "string", enum: ["XRP", "BTC", "ETH"], default: "XRP" }
+      }
+    }
   },
   {
     id: "ai-summarizer",
     name: "AI Summarizer",
-    description: "Summarizes any text in 3 sentences. POST body { text }. Powered by Claude API.",
+    description: "Summarize long-form content using open-source LLMs. Works with text, URLs, or uploaded documents.",
     category: "AI",
     icon: "🤖",
+    path: "/api/tools/ai-summarizer",
     method: "POST",
-    path: "/tools/ai-summarizer",
     free: true,
-    github: "https://github.com/xrpex/agentpay-backend",
-    deploy_script: `# AI Summarizer — One-script deploy
-# Requires: Node.js 18+, Anthropic API key
-
-npm install express
-
-cat > summarizer.js << 'EOF'
-import express from "express";
-const app = express();
-app.use(express.json());
-app.post("/summarize", async (req, res) => {
-  const { text } = req.body;
-  if (!text) return res.status(400).json({ error: "POST { text } required" });
-  const r = await fetch("https://api.anthropic.com/v1/messages", {
-    method: "POST",
-    headers: {
-      "x-api-key": process.env.ANTHROPIC_API_KEY,
-      "anthropic-version": "2023-06-01",
-      "content-type": "application/json",
-    },
-    body: JSON.stringify({
-      model: "claude-haiku-4-5-20251001",
-      max_tokens: 300,
-      messages: [{ role: "user", content: "Summarize in 3 sentences:\\n\\n" + text.slice(0,4000) }],
-    }),
-  });
-  const data = await r.json();
-  res.json({ summary: data.content?.[0]?.text });
-});
-app.listen(3002, () => console.log("Summarizer on :3002"));
-EOF
-
-ANTHROPIC_API_KEY=your-key node summarizer.js`,
-    example_request: `curl -X POST "https://agentpay-backend-production.up.railway.app/tools/ai-summarizer" \\
+    github: "https://github.com/xrpex/agentpay-tools/tree/main/ai-summarizer",
+    docs_url: "https://agentpay-frontend-theta.vercel.app/docs/ai-summarizer",
+    deploy_script: `#!/bin/bash
+# Deploy AI Summarizer (requires Ollama)
+curl -fsSL https://ollama.com/install.sh | sh
+ollama pull llama2
+git clone https://github.com/xrpex/agentpay-tools.git
+cd agentpay-tools/ai-summarizer
+npm install
+npm start`,
+    example_request: `curl -X POST https://your-server.com/api/tools/ai-summarizer \\
   -H "Content-Type: application/json" \\
-  -d '{"text": "Your long text here..."}'`,
-    example_response: `{ "summary": "Three sentence summary of your text.", "method": "claude" }`,
+  -d '{"text": "Long article text here...", "max_length": 200}'`,
+    example_response: `{
+  "success": true,
+  "data": {
+    "summary": "This is a concise summary of the original text...",
+    "original_length": 1250,
+    "summary_length": 185,
+    "compression_ratio": 0.148
+  }
+}`,
+    schema: {
+      type: "object",
+      properties: {
+        text: { type: "string", description: "Text to summarize" },
+        url: { type: "string", format: "uri", description: "URL to fetch and summarize" },
+        max_length: { type: "integer", minimum: 50, maximum: 1000, default: 200 }
+      }
+    }
   },
   {
-    id: "defi-feed",
-    name: "XRPL DeFi Feed",
-    description: "Returns top XRPL AMM pool snapshot with trading pairs and fees.",
-    category: "Finance",
-    icon: "💹",
-    method: "GET",
-    path: "/tools/defi-feed",
-    free: true,
-    github: "https://github.com/xrpex/agentpay-backend",
-    deploy_script: `# XRPL DeFi Feed — One-script deploy
-# Requires: Node.js 18+
-
-npm install express node-fetch
-
-cat > defi-feed.js << 'EOF'
-import express from "express";
-import fetch from "node-fetch";
-const app = express();
-app.get("/defi", async (_req, res) => {
-  const r = await fetch("https://api.xrpscan.com/api/v1/amm/pools?limit=10");
-  const data = await r.json();
-  const pools = (Array.isArray(data) ? data : []).slice(0,10).map(p => ({
-    asset1: p.Asset?.currency ?? "XRP",
-    asset2: p.Asset2?.currency ?? "XRP",
-    trading_fee: p.TradingFee,
-  }));
-  res.json({ pools, timestamp: new Date().toISOString() });
-});
-app.listen(3003, () => console.log("DeFi feed on :3003"));
-EOF
-
-node defi-feed.js`,
-    example_request: `curl "https://agentpay-backend-production.up.railway.app/tools/defi-feed"`,
-    example_response: `{ "pools": [{ "asset1": "XRP", "asset2": "USDT", "trading_fee": 500 }], "timestamp": "..." }`,
-  },
-  {
-    id: "code-executor",
-    name: "Code Executor",
-    description: "Safely runs a Python snippet. POST body { code }. Returns stdout/stderr.",
+    id: "codex-search",
+    name: "Codex Search",
+    description: "Search code and documentation across GitHub, Stack Overflow, and npm. Returns relevant code snippets.",
     category: "Dev",
-    icon: "⚡",
+    icon: "🔍",
+    path: "/api/tools/codex-search",
     method: "POST",
-    path: "/tools/code-executor",
     free: true,
-    github: "https://github.com/xrpex/agentpay-backend",
-    deploy_script: `# Code Executor — One-script deploy
-# Uses Piston public sandbox API (no API key needed)
-
-npm install express node-fetch
-
-cat > executor.js << 'EOF'
-import express from "express";
-import fetch from "node-fetch";
-const app = express();
-app.use(express.json());
-app.post("/execute", async (req, res) => {
-  const { code } = req.body;
-  if (!code) return res.status(400).json({ error: "POST { code } required" });
-  const r = await fetch("https://emkc.org/api/v2/piston/execute", {
-    method: "POST",
-    headers: { "content-type": "application/json" },
-    body: JSON.stringify({
-      language: "python", version: "3.10",
-      files: [{ content: code }], stdin: "",
-    }),
-  });
-  const data = await r.json();
-  res.json({ stdout: data.run?.stdout, stderr: data.run?.stderr });
-});
-app.listen(3004, () => console.log("Executor on :3004"));
-EOF
-
-node executor.js`,
-    example_request: `curl -X POST "https://agentpay-backend-production.up.railway.app/tools/code-executor" \\
+    github: "https://github.com/xrpex/agentpay-tools/tree/main/codex-search",
+    docs_url: "https://agentpay-frontend-theta.vercel.app/docs/codex-search",
+    deploy_script: `#!/bin/bash
+# Deploy Codex Search
+git clone https://github.com/xrpex/agentpay-tools.git
+cd agentpay-tools/codex-search
+npm install
+npm start`,
+    example_request: `curl -X POST https://your-server.com/api/tools/codex-search \\
   -H "Content-Type: application/json" \\
-  -d '{"code": "print(42)"}'`,
-    example_response: `{ "stdout": "42\\n", "stderr": "" }`,
+  -d '{"query": "fetch API javascript", "sources": ["github", "stackoverflow"]}'`,
+    example_response: `{
+  "success": true,
+  "data": {
+    "results": [
+      {
+        "source": "github",
+        "title": "fetch-example.js",
+        "snippet": "fetch('https://api.example.com/data')\\n  .then(response => response.json())\\n  .then(data => console.log(data));",
+        "url": "https://github.com/example/fetch-example"
+      }
+    ],
+    "total": 12
+  }
+}`,
+    schema: {
+      type: "object",
+      properties: {
+        query: { type: "string", description: "Search query" },
+        sources: { type: "array", items: { type: "string", enum: ["github", "stackoverflow", "npm"] }, default: ["github"] }
+      },
+      required: ["query"]
+    }
   },
+  {
+    id: "defi-data",
+    name: "DeFi Data",
+    description: "Fetch DeFi protocol analytics, TVL, yields, and token prices across major chains.",
+    category: "Finance",
+    icon: "💰",
+    path: "/api/tools/defi-data",
+    method: "GET",
+    free: true,
+    github: "https://github.com/xrpex/agentpay-tools/tree/main/defi-data",
+    docs_url: "https://agentpay-frontend-theta.vercel.app/docs/defi-data",
+    deploy_script: `#!/bin/bash
+# Deploy DeFi Data aggregator
+git clone https://github.com/xrpex/agentpay-tools.git
+cd agentpay-tools/defi-data
+npm install
+npm start`,
+    example_request: `curl https://your-server.com/api/tools/defi-data?protocol=aave&chain=ethereum`,
+    example_response: `{
+  "success": true,
+  "data": {
+    "protocol": "Aave",
+    "chain": "ethereum",
+    "tvl": 5420000000,
+    "total_borrowed": 3250000000,
+    "apy": {
+      "usdc": 3.45,
+      "weth": 1.23
+    }
+  }
+}`,
+    schema: {
+      type: "object",
+      properties: {
+        protocol: { type: "string", description: "Protocol name" },
+        chain: { type: "string", enum: ["ethereum", "polygon", "arbitrum", "optimism"] }
+      }
+    }
+  }
 ];
 
-// ── Paid tools — fetched from Supabase (admin-managed) ────────────────────────
-export async function fetchPaidTools() {
-  if (SUPABASE_URL && SUPABASE_ANON) {
-    try {
-      const r = await fetch(
-        `${SUPABASE_URL}/rest/v1/paid_tools?order=created_at.desc&active=eq.true`,
-        { headers: { apikey: SUPABASE_ANON, Authorization: `Bearer ${SUPABASE_ANON}` } }
-      );
-      if (r.ok) return r.json();
-    } catch {}
+// ─────────────────────────────────────────────────────────────────────────────
+// PAID TOOLS (Premium - Pay Per Call via XRPL x402)
+// ─────────────────────────────────────────────────────────────────────────────
+
+// Fallback schema for when backend is unavailable
+export const PAID_TOOLS_SCHEMA = {
+  "web-scraper-pro": {
+    id: "web-scraper-pro",
+    name: "Web Scraper Pro",
+    description: "Advanced web scraping with JavaScript rendering, proxy rotation, and anti-bot bypass.",
+    category: "Data",
+    icon: "🕷️⚡",
+    price_drops: 20000,
+    price_xrp: 0.02,
+    endpoint: "/v1/tools/web-scraper-pro",
+    method: "POST",
+    schema: {
+      type: "object",
+      properties: {
+        url: { type: "string", format: "uri" },
+        javascript: { type: "boolean", default: true },
+        wait_for: { type: "integer", minimum: 0, maximum: 10000, default: 2000 }
+      },
+      required: ["url"]
+    }
+  },
+  "ai-summarizer-pro": {
+    id: "ai-summarizer-pro",
+    name: "AI Summarizer Pro",
+    description: "Premium summarization with GPT-4 level quality. Handles PDFs, videos, and multi-document synthesis.",
+    category: "AI",
+    icon: "🧠",
+    price_drops: 50000,
+    price_xrp: 0.05,
+    endpoint: "/v1/tools/ai-summarizer-pro",
+    method: "POST",
+    schema: {
+      type: "object",
+      properties: {
+        content: { type: "string" },
+        url: { type: "string", format: "uri" },
+        format: { type: "string", enum: ["bullet", "paragraph", "executive"] },
+        max_tokens: { type: "integer", minimum: 100, maximum: 2000, default: 500 }
+      }
+    }
+  },
+  "defi-analytics": {
+    id: "defi-analytics",
+    name: "DeFi Analytics Premium",
+    description: "Real-time DeFi analytics with historical data, APY tracking, and risk metrics across 50+ protocols.",
+    category: "Finance",
+    icon: "📈",
+    price_drops: 30000,
+    price_xrp: 0.03,
+    endpoint: "/v1/tools/defi-analytics",
+    method: "GET",
+    schema: {
+      type: "object",
+      properties: {
+        protocol: { type: "string" },
+        chain: { type: "string" },
+        timeframe: { type: "string", enum: ["1h", "24h", "7d", "30d"], default: "24h" }
+      }
+    }
   }
-  return []; // no paid tools if Supabase not configured
-}
+};
 
-// ── Legacy — kept for backend registry fetch ──────────────────────────────────
-export async function fetchTools() {
+// ─────────────────────────────────────────────────────────────────────────────
+// API CONFIGURATION
+// ─────────────────────────────────────────────────────────────────────────────
+
+const API_BASE = import.meta.env.VITE_API_BASE || 'https://agentpay-backend-production.up.railway.app';
+
+// ─────────────────────────────────────────────────────────────────────────────
+// API FUNCTIONS
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * Fetch paid tools from backend
+ */
+export async function fetchPaidTools() {
   try {
-    const r = await fetch(`${BASE}/tools`);
-    if (r.ok) return r.json();
-  } catch {}
-  return FREE_TOOLS;
+    const response = await fetch(`${API_BASE}/v1/tools`, {
+      headers: {
+        'Accept': 'application/json',
+      }
+    });
+    
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}`);
+    }
+    
+    const data = await response.json();
+    
+    // Transform backend response to match frontend tool format
+    return (data.tools || []).map(tool => ({
+      id: tool.id || tool.name,
+      name: tool.name,
+      description: tool.description,
+      category: tool.category || "General",
+      icon: tool.icon || "⚡",
+      path: tool.endpoint || `/v1/tools/${tool.name}`,
+      method: tool.method || "POST",
+      free: false,
+      price_drops: tool.priceInDrops || (tool.price ? Math.floor(tool.price * 1000000) : 0),
+      price_xrp: tool.price || 0,
+      schema: tool.schema,
+      github: tool.github_url,
+      docs_url: tool.docs_url,
+      provider: tool.provider,
+      verified: tool.verified ?? true
+    }));
+  } catch (error) {
+    console.error('Failed to fetch paid tools:', error);
+    // Return fallback data if backend unavailable
+    return Object.values(PAID_TOOLS_SCHEMA).map(tool => ({
+      ...tool,
+      free: false,
+      path: tool.endpoint
+    }));
+  }
 }
 
-export async function fetchStats() {
-  return { total_calls: 0, total_xrp_earned: 0, unique_agents: 0, top_tool: "—" };
+export async function fetchToolById(toolId) {
+  
+  const freeTool = FREE_TOOLS.find(t => t.id === toolId);
+  if (freeTool) {
+    return { ...freeTool, free: true };
+  }
+  
+  
+  try {
+    const response = await fetch(`${API_BASE}/v1/tools/${toolId}`, {
+      headers: { 'Accept': 'application/json' }
+    });
+    
+    if (!response.ok) {
+      throw new Error(`Tool not found: ${toolId}`);
+    }
+    
+    const tool = await response.json();
+    return {
+      ...tool,
+      id: tool.id || toolId,
+      free: false,
+      price_drops: tool.priceInDrops || (tool.price ? Math.floor(tool.price * 1000000) : 0)
+    };
+  } catch (error) {
+    console.error('Failed to fetch tool:', error);
+    
+    const fallbackTool = PAID_TOOLS_SCHEMA[toolId];
+    if (fallbackTool) {
+      return {
+        ...fallbackTool,
+        free: false,
+        price_drops: fallbackTool.price_drops || 0,
+        price_xrp: fallbackTool.price_xrp || 0
+      };
+    }
+    return null;
+  }
 }
+
+
+export async function getPaymentIntent(toolId, options = {}) {
+  const response = await fetch(`${API_BASE}/v1/tools/${toolId}/intent`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Accept': 'application/json'
+    },
+    body: JSON.stringify({
+      toolId,
+      ...options
+    })
+  });
+  
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.message || 'Failed to create payment intent');
+  }
+  
+  return response.json();
+}
+
+export async function executePaidTool(toolId, params, paymentProof) {
+  const response = await fetch(`${API_BASE}/v1/tools/${toolId}/call`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Accept': 'application/json'
+    },
+    body: JSON.stringify({
+      params,
+      paymentProof: {
+        txHash: paymentProof.txHash,
+        amount: paymentProof.amount,
+        destination: paymentProof.destination,
+        sender: paymentProof.sender,
+        timestamp: paymentProof.timestamp
+      }
+    })
+  });
+  
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.message || 'Tool execution failed');
+  }
+  
+  return response.json();
+}
+
+
+export async function executeFreeTool(toolId, params, baseUrl = null) {
+  const tool = FREE_TOOLS.find(t => t.id === toolId);
+  if (!tool) {
+    throw new Error(`Free tool "${toolId}" not found`);
+  }
+  
+  
+  const url = baseUrl ? `${baseUrl}${tool.path}` : `${API_BASE}${tool.path}`;
+  
+  const response = await fetch(url, {
+    method: tool.method,
+    headers: {
+      'Content-Type': 'application/json',
+      'Accept': 'application/json'
+    },
+    body: tool.method === 'POST' ? JSON.stringify(params) : undefined
+  });
+  
+  if (!response.ok) {
+    throw new Error(`Tool execution failed: ${response.status}`);
+  }
+  
+  return response.json();
+}
+
+
+export async function getAllTools() {
+  const freeTools = FREE_TOOLS.map(t => ({ ...t, free: true }));
+  const paidTools = await fetchPaidTools();
+  return [...freeTools, ...paidTools];
+}
+
+
+export function getCategoriesWithCounts(tools) {
+  const counts = {};
+  tools.forEach(tool => {
+    counts[tool.category] = (counts[tool.category] || 0) + 1;
+  });
+  return Object.entries(counts).map(([name, count]) => ({ name, count }));
+}
+
+
+export function validateToolParams(tool, params) {
+  if (!tool.schema) return { valid: true };
+  
+  const { required, properties } = tool.schema;
+  const errors = [];
+  
+  
+  if (required) {
+    for (const field of required) {
+      if (params[field] === undefined || params[field] === null) {
+        errors.push(`Missing required field: ${field}`);
+      }
+    }
+  }
+  
+  
+  if (properties) {
+    for (const [field, schema] of Object.entries(properties)) {
+      if (params[field] !== undefined) {
+        const value = params[field];
+        
+        if (schema.type === 'string' && typeof value !== 'string') {
+          errors.push(`${field} must be a string`);
+        }
+        if (schema.type === 'number' && typeof value !== 'number') {
+          errors.push(`${field} must be a number`);
+        }
+        
+        if (schema.type === 'integer' && (!Number.isInteger(value))) {
+          errors.push(`${field} must be an integer`);
+        }
+        if (schema.type === 'boolean' && typeof value !== 'boolean') {
+          errors.push(`${field} must be a boolean`);
+        }
+        if (schema.type === 'array' && !Array.isArray(value)) {
+          errors.push(`${field} must be an array`);
+        }
+        
+        
+        if (schema.enum && !schema.enum.includes(value)) {
+          errors.push(`${field} must be one of: ${schema.enum.join(', ')}`);
+        }
+        
+        
+        if (schema.format === 'uri' && typeof value === 'string') {
+          try {
+            new URL(value);
+          } catch {
+            errors.push(`${field} must be a valid URL`);
+          }
+        }
+      }
+    }
+  }
+  
+  return {
+    valid: errors.length === 0,
+    errors
+  };
+}
+
+export default {
+  FREE_TOOLS,
+  PAID_TOOLS_SCHEMA,
+  fetchPaidTools,
+  fetchToolById,
+  getPaymentIntent,
+  executePaidTool,
+  executeFreeTool,
+  getAllTools,
+  getCategoriesWithCounts,
+  validateToolParams
+};
